@@ -10,22 +10,28 @@ public class ControlPlayer
     private float horizontal;
     private float vertical;
     // Dash
+    private bool unlockedDash;
     private bool canDash = true;
     private bool isDashing = false;
-    private float dashCooldown = 0.5f;
+    private float dashCooldown;
     private float dashCooldownTimer = 0f;
     private float dashDuration = 0.2f;
     private float dashTimer = 0f;
-    private float dashImpulse = 40f;
+    //private float dashImpulse = 40f;
 
     //Shield
     private bool canShield = true;
     private bool isShielding = false;
-    private float shieldCooldown = 1f;
-    private float shieldCooldownTimer = 0f;
-    private float shieldDuration = 5f;
-    private float shieldTimer = 0f;
+    private float radius;
+   
+    public bool unlockedShield = false;
+    float shieldCooldown;
     
+    private float shieldDuration;
+    private float shieldCooldownTimer = 0f;
+    private float shieldTimer = 0f;
+
+
     public ControlPlayer(Movement m, PlayerAnimation a, Shield s)
     {
         _movement = m;
@@ -45,7 +51,15 @@ public class ControlPlayer
         bool isJumping = Input.GetKeyDown(KeyCode.Space);
         bool isDash = Input.GetKeyDown(KeyCode.Mouse0); 
         bool isShield = Input.GetKeyDown(KeyCode.Mouse1);
-
+        // DASH UNLOCK & LEVEL UP
+        unlockedDash = ManagerSkills.instance.IsUnlocked(SkillCategory.dashCategory);
+        dashCooldown = ManagerSkills.instance.GetValueSkill(SkillCategory.dashCategory,SkillStatType.dashCooldown);
+        //SHIELD UNLOCK & LEVEL UP
+        unlockedShield = ManagerSkills.instance.IsUnlocked(SkillCategory.shieldCategory);
+        shieldCooldown = ManagerSkills.instance.GetValueSkill(SkillCategory.shieldCategory, SkillStatType.shieldCooldown);
+        radius = ManagerSkills.instance.GetValueSkill(SkillCategory.shieldCategory, SkillStatType.shieldRadius);
+        shieldDuration = ManagerSkills.instance.GetValueSkill(SkillCategory.shieldCategory, SkillStatType.shieldDuration);
+        _shield.radius = radius;
         // -------ANIMACIONES DE MOVIMIENTO------
         _animation.SetGround("ground", isGrounded);
 
@@ -142,10 +156,10 @@ public class ControlPlayer
         }
 
         // ---------- DASH ----------
-        if (isDash && canDash && isDodgeMode && isGrounded)
+        if (isDash && unlockedDash && canDash && isDodgeMode && isGrounded)
         {
             //_animation.SetDodge("dodging", foward * 3);
-            _movement.Dash(dashImpulse);
+            _movement.Dash();
             isDashing = true;
             canDash = false;
             dashTimer = dashDuration;
@@ -158,20 +172,22 @@ public class ControlPlayer
             {
                 _movement.StopDash();
                 isDashing = false;
-                //_animation.SetDodge("dodging", foward);
+               
             }
         }
         if (!canDash)
         {
+            
             dashCooldownTimer -= Time.deltaTime;
             if (dashCooldownTimer <= 0f)
             {
+            
                 canDash = true;
             }
         }
 
         //SHIELD
-        if (isShield && canShield && !isDodgeMode)
+        if (unlockedShield && isShield && canShield && !isDodgeMode)
         {
             _shield.canShield = true;
             _shield.ActivateShield();

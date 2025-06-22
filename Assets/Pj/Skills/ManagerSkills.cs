@@ -4,6 +4,8 @@ using UnityEngine;
 public enum SkillCategory
 {
     turretCategory,
+    dashCategory,
+    shieldCategory
 }
 public class ManagerSkills : MonoBehaviour
 {
@@ -52,6 +54,11 @@ public class ManagerSkills : MonoBehaviour
                 if (currentLevel < maxLevel && PointManager.instance.SpendPoints(costLevel))
                 {
                     skill.progressPerStat[i].level++;
+                    print("Subiste nivel: " + specificType + "Nuevo level: " + skill.progressPerStat[i].level);
+                }
+                else
+                {
+                    print("Ya tenes al nivel maximo o no tenes suficiente puntos para" + specificType);
                 }
                 break;
             }
@@ -94,7 +101,7 @@ public class ManagerSkills : MonoBehaviour
         }
         return 0f;
     }
-    private float GetValueSkillCost(SkillCategory category, SkillStatType specificType)
+    public float GetValueSkillCost(SkillCategory category, SkillStatType specificType)
     {
         if (!_skills.ContainsKey(category)) return 0f;
         ActiveSkill skill = _skills[category];
@@ -129,6 +136,7 @@ public class ManagerSkills : MonoBehaviour
         if (skill.isUnlocked) return;
         if (PointManager.instance.SpendPoints(skill.costToUnlock))
         {
+            print("Se desbloqueo: " + category);
             skill.isUnlocked = true;
             var entry = skillEntries.Find(x => x.category == category);
             if (entry != null) entry.isUnlocked = true;
@@ -145,11 +153,11 @@ public class ManagerSkills : MonoBehaviour
             int maxLevel = stat.GetMaxLevel();
             if (progress.level < maxLevel)
             {
-                print("No estan todas al maximo");
+                print("No estan todas al maximo" + category);
                 return false;
             }
         }
-        print("SIII estan todas al maximo");
+        print("SIII estan todas al maximo" + category);
         return true;
     }
     public void TryUnlockUltimate(SkillCategory category)
@@ -159,15 +167,19 @@ public class ManagerSkills : MonoBehaviour
         if (!skill.isUnlocked || skill.ultimateUnlocked) return;
         if (!AreAllSkillsMaxed(category))
         {
-            Debug.Log("No se puede desbloquear aún, faltan habilidades al máximo.");
+            Debug.Log("No se puede desbloquear aún, faltan habilidades al máximo");
             return;
         }
         if (PointManager.instance.SpendPoints(skill.costToUnlockUltimate))
         {
+            skill.ultimateUnlocked = true;
             var entry = skillEntries.Find(x => x.category == category);
             if (entry != null) entry.ultimateUnlocked = true;
-            skill.ultimateUnlocked = true;
-            Debug.Log("¡Mejora definitiva desbloqueada!");
+            Debug.Log("¡Mejora definitiva desbloqueada!" + category);
+        }
+        else
+        {
+            Debug.Log("Tenes las Habilidades al maximo pero te faltan puntos");
         }
     }
     public bool IsUnlockUltimate(SkillCategory category)
@@ -197,7 +209,7 @@ public class ActiveSkill
     public bool isUnlocked;
     public float costToUnlock;
     public bool ultimateUnlocked = false;
-    public float costToUnlockUltimate = 50f;
+    public float costToUnlockUltimate;
     public ActiveSkill(SkillCategory category,SkillCategoryData dataStrcut,bool isUnlocked,float costToUnlock,float costToUnlockUltimate)
     {
         this.category = category;
