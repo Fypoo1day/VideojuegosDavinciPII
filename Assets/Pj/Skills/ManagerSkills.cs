@@ -129,7 +129,7 @@ public class ManagerSkills : MonoBehaviour
         return skill.isUnlocked;
     } 
     #endregion
-    public void CanUnlockSkillCategory(SkillCategory category)
+    public void UnlockSkillCategory(SkillCategory category)
     {
         if (!_skills.ContainsKey(category)) return;
         ActiveSkill skill = _skills[category];
@@ -142,6 +142,22 @@ public class ManagerSkills : MonoBehaviour
             if (entry != null) entry.isUnlocked = true;
         }
     }
+
+    public bool CanUnlockSkillCategory(SkillCategory category)
+    {
+        if (!_skills.ContainsKey(category)) return false;
+        ActiveSkill skill = _skills[category];
+       
+        if (PointManager.instance.HasEnoughPoints(skill.costToUnlock))
+        {
+            return true;
+            
+        }
+        else return false;
+    }
+
+   
+
     public bool AreAllSkillsMaxed(SkillCategory category)
     {
         if (!_skills.ContainsKey(category)) return false;
@@ -210,6 +226,7 @@ public class ActiveSkill
     public float costToUnlock;
     public bool ultimateUnlocked = false;
     public float costToUnlockUltimate;
+    
     public ActiveSkill(SkillCategory category,SkillCategoryData dataStrcut,bool isUnlocked,float costToUnlock,float costToUnlockUltimate)
     {
         this.category = category;
